@@ -109,7 +109,7 @@ streamlit run app.py
 Add screenshot here:
 
 ```
-screenshots/homepage.png
+screenshots/image1.png
 ```
 
 ### Prediction Result
@@ -117,7 +117,7 @@ screenshots/homepage.png
 Add screenshot here:
 
 ```
-screenshots/result.png
+screenshots/image5.png
 ```
 
 ---
@@ -165,9 +165,9 @@ Output:
 B.Tech Information Technology
 Veer Surendra Sai University of Technology, Burla
 
-GitHub: https://github.com/yourusername
+GitHub: https://github.com/preranadas03
 
-LinkedIn: https://linkedin.com/in/yourprofile
+LinkedIn: https://linkedin.com/in/preranapriyadarsinidas/
 
 ---
 
