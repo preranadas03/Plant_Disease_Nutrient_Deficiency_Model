@@ -1,3 +1,4 @@
+/* Ported from static/css/style.css */
 /* ==========================================================================
    LeafSentry Theme System & Layout Configurations
    ========================================================================== */
@@ -169,6 +170,7 @@ p {
     text-decoration: none;
     font-weight: 500;
     transition: all var(--transition-fast);
+    cursor: pointer;
 }
 
 .menu-item i {
@@ -522,6 +524,7 @@ body.light-theme .theme-toggle .moon-icon {
     cursor: pointer;
     border: none;
     transition: all var(--transition-fast);
+    padding: 12px 24px;
 }
 
 .btn-primary {
@@ -1346,6 +1349,12 @@ body.light-theme .status-badge.leaf-variegation {
     animation: slideInRight 0.3s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
 }
 
+.toast-content {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
 .toast.error {
     border-left-color: var(--accent-red);
 }
@@ -1401,6 +1410,7 @@ body.light-theme .status-badge.leaf-variegation {
     display: flex;
     justify-content: center;
     align-items: center;
+    width: 100%;
     min-height: calc(100vh - 120px);
     padding: 20px;
     animation: fadeIn var(--transition-normal) forwards;
@@ -1803,6 +1813,7 @@ body.light-theme .status-badge.leaf-variegation {
     text-decoration: none;
     color: var(--text-secondary);
     transition: all var(--transition-fast);
+    cursor: pointer;
 }
 
 .directory-card:hover {
@@ -2387,11 +2398,11 @@ body.light-theme .status-badge.leaf-variegation {
     overflow-x: auto;
     background-color: var(--bg-color);
     border-top: 1px solid var(--border-color);
-    scrollbar-width: none; /* Hide scrollbar for Firefox */
+    scrollbar-width: none;
 }
 
 .chat-suggestions::-webkit-scrollbar {
-    display: none; /* Hide scrollbar for Chrome/Safari */
+    display: none;
 }
 
 .suggestion-chip {

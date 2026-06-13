@@ -1,7 +1,7 @@
 import os
 import uuid
 from functools import wraps
-from flask import Flask, render_template, request, jsonify, send_file, url_for, session, redirect
+from flask import Flask, request, jsonify, send_file, url_for, session, redirect, send_from_directory
 from ultralytics import YOLO
 from PIL import Image
 import db
@@ -14,9 +14,6 @@ app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max upload
 
 # Ensure directories exist
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-os.makedirs(os.path.join('static', 'css'), exist_ok=True)
-os.makedirs(os.path.join('static', 'js'), exist_ok=True)
-os.makedirs('templates', exist_ok=True)
 
 # Initialize Database
 db.init_db()
@@ -60,18 +57,18 @@ prevention = {
     "Leaf Variegation": "Perform routine soil tests, ensure proper soil aeration, and apply organic compost to improve soil structures."
 }
 
-# Login Decorator
 def login_required(role=None):
     def decorator(f):
         @wraps(f)
         def decorated_function(*args, **kwargs):
             if 'user_id' not in session:
-                return redirect(url_for('login'))
+                if request.path.startswith('/api/') or request.path == '/analyze' or request.path == '/chatbot':
+                    return jsonify({'error': 'Unauthorized'}), 401
+                return redirect('/')
             if role and session.get('role') != role:
-                if session.get('role') == 'agronomist':
-                    return redirect(url_for('agronomist_dashboard'))
-                else:
-                    return redirect(url_for('index'))
+                if request.path.startswith('/api/'):
+                    return jsonify({'error': 'Forbidden'}), 403
+                return redirect('/')
             return f(*args, **kwargs)
         return decorated_function
     return decorator
@@ -84,135 +81,173 @@ def inject_user():
         user = db.get_user_profile(session['user_id'])
     return dict(current_user=user)
 
-# --- AUTH ROUTES ---
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    if 'user_id' in session:
-        if session['role'] == 'agronomist':
-            return redirect(url_for('agronomist_dashboard'))
-        return redirect(url_for('index'))
-        
-    error = None
-    if request.method == 'POST':
-        username = request.form.get('username')
-        password = request.form.get('password')
-        
-        user = db.authenticate_user(username, password)
-        if user:
-            session['user_id'] = user['id']
-            session['username'] = user['username']
-            session['role'] = user['role']
-            session['full_name'] = user['full_name']
-            
-            if user['role'] == 'agronomist':
-                return redirect(url_for('agronomist_dashboard'))
-            return redirect(url_for('index'))
-        else:
-            error = "Invalid username or password."
-            
-    return render_template('login.html', error=error)
+# --- REACT API ENDPOINTS ---
 
-@app.route('/register', methods=['GET', 'POST'])
-def register():
+@app.route('/api/session-check', methods=['GET'])
+def api_session_check():
     if 'user_id' in session:
-        return redirect(url_for('index'))
-        
-    error = None
-    if request.method == 'POST':
-        username = request.form.get('username')
-        password = request.form.get('password')
-        role = request.form.get('role')
-        full_name = request.form.get('full_name')
-        phone = request.form.get('phone')
-        location = request.form.get('location')
-        
-        profile_data = {}
-        if role == 'farmer':
-            profile_data['farm_name'] = request.form.get('farm_name')
-            profile_data['farm_size'] = request.form.get('farm_size')
-            profile_data['soil_type'] = request.form.get('soil_type')
-            profile_data['primary_crop'] = request.form.get('primary_crop')
-            profile_data['irrigation_type'] = request.form.get('irrigation_type')
-        elif role == 'agronomist':
-            profile_data['specialization'] = request.form.get('specialization')
-            profile_data['experience_years'] = request.form.get('experience_years')
-            profile_data['license_number'] = request.form.get('license_number')
-            
-        user_id = db.register_user(
-            username=username,
-            password=password,
-            role=role,
-            full_name=full_name,
-            phone=phone,
-            location=location,
-            profile_data=profile_data
-        )
-        
-        if user_id:
-            session['user_id'] = user_id
-            session['username'] = username
-            session['role'] = role
-            session['full_name'] = full_name
-            
-            if role == 'agronomist':
-                return redirect(url_for('agronomist_dashboard'))
-            return redirect(url_for('index'))
-        else:
-            error = "Username already exists. Please choose another one."
-            
-    return render_template('register.html', error=error)
+        user_profile = db.get_user_profile(session['user_id'])
+        if user_profile:
+            return jsonify({'logged_in': True, 'user': user_profile})
+    return jsonify({'logged_in': False})
 
-@app.route('/logout')
-def logout():
+@app.route('/api/login', methods=['POST'])
+def api_login():
+    data = request.json or {}
+    username = data.get('username')
+    password = data.get('password')
+    
+    if not username or not password:
+        return jsonify({'error': 'Missing username or password.'}), 400
+        
+    user = db.authenticate_user(username, password)
+    if user:
+        session['user_id'] = user['id']
+        session['username'] = user['username']
+        session['role'] = user['role']
+        session['full_name'] = user['full_name']
+        user_profile = db.get_user_profile(user['id'])
+        return jsonify({'status': 'success', 'user': user_profile})
+    else:
+        return jsonify({'error': 'Invalid username or password.'}), 401
+
+@app.route('/api/register', methods=['POST'])
+def api_register():
+    data = request.json or {}
+    username = data.get('username')
+    password = data.get('password')
+    role = data.get('role')
+    full_name = data.get('full_name')
+    phone = data.get('phone')
+    location = data.get('location')
+    
+    if not username or not password or not role or not full_name:
+        return jsonify({'error': 'Missing required registration fields.'}), 400
+        
+    profile_data = {}
+    if role == 'farmer':
+        profile_data['farm_name'] = data.get('farm_name', 'Green Fields')
+        profile_data['farm_size'] = data.get('farm_size', 10.0)
+        profile_data['soil_type'] = data.get('soil_type', 'Loamy')
+        profile_data['primary_crop'] = data.get('primary_crop', 'Cotton')
+        profile_data['irrigation_type'] = data.get('irrigation_type', 'Drip')
+    elif role == 'agronomist':
+        profile_data['specialization'] = data.get('specialization', 'Crop Pathology')
+        profile_data['experience_years'] = data.get('experience_years', 5)
+        profile_data['license_number'] = data.get('license_number', 'AG-00000')
+        
+    user_id = db.register_user(
+        username=username,
+        password=password,
+        role=role,
+        full_name=full_name,
+        phone=phone,
+        location=location,
+        profile_data=profile_data
+    )
+    
+    if user_id:
+        session['user_id'] = user_id
+        session['username'] = username
+        session['role'] = role
+        session['full_name'] = full_name
+        user_profile = db.get_user_profile(user_id)
+        return jsonify({'status': 'success', 'user': user_profile})
+    else:
+        return jsonify({'error': 'Username already exists. Please choose another one.'}), 400
+
+@app.route('/api/logout', methods=['POST', 'GET'])
+def api_logout():
     session.clear()
-    return redirect(url_for('login'))
+    return jsonify({'status': 'success'})
 
-@app.route('/profile', methods=['GET', 'POST'])
+@app.route('/api/profile', methods=['POST'])
 @login_required()
-def profile():
+def api_profile():
     user_id = session['user_id']
     role = session['role']
-    success = False
-    error = None
+    data = request.json or {}
     
-    if request.method == 'POST':
-        full_name = request.form.get('full_name')
-        phone = request.form.get('phone')
-        location = request.form.get('location')
+    full_name = data.get('full_name')
+    phone = data.get('phone')
+    location = data.get('location')
+    
+    if not full_name:
+        return jsonify({'error': 'Full name is required.'}), 400
         
-        if role == 'farmer':
-            farm_name = request.form.get('farm_name')
-            farm_size = request.form.get('farm_size')
-            soil_type = request.form.get('soil_type')
-            primary_crop = request.form.get('primary_crop')
-            irrigation_type = request.form.get('irrigation_type')
-            
-            db.update_farmer_profile(user_id, full_name, phone, location, farm_name, farm_size, soil_type, primary_crop, irrigation_type)
-            success = True
-        elif role == 'agronomist':
-            specialization = request.form.get('specialization')
-            experience_years = request.form.get('experience_years')
-            license_number = request.form.get('license_number')
-            
-            db.update_agronomist_profile(user_id, full_name, phone, location, specialization, experience_years, license_number)
-            success = True
-            
+    if role == 'farmer':
+        farm_name = data.get('farm_name')
+        farm_size = data.get('farm_size')
+        soil_type = data.get('soil_type')
+        primary_crop = data.get('primary_crop')
+        irrigation_type = data.get('irrigation_type')
+        
+        db.update_farmer_profile(user_id, full_name, phone, location, farm_name, farm_size, soil_type, primary_crop, irrigation_type)
+    elif role == 'agronomist':
+        specialization = data.get('specialization')
+        experience_years = data.get('experience_years')
+        license_number = data.get('license_number')
+        
+        db.update_agronomist_profile(user_id, full_name, phone, location, specialization, experience_years, license_number)
+        
     user_profile = db.get_user_profile(user_id)
-    return render_template('profile.html', profile=user_profile, success=success, error=error)
+    return jsonify({'status': 'success', 'user': user_profile})
 
-# --- CORE PORTAL ROUTES ---
-@app.route('/')
+@app.route('/api/agronomist/dashboard', methods=['GET'])
+@login_required('agronomist')
+def api_agronomist_dashboard():
+    farmers = db.get_farmers()
+    total_farmers = len(farmers)
+    all_diagnoses = db.get_history()
+    unreviewed_diagnoses = sum(1 for d in all_diagnoses if not db.get_recommendation_by_analysis(d['id']))
+    
+    return jsonify({
+        'farmers': farmers,
+        'total_farmers': total_farmers,
+        'unreviewed_diagnoses': unreviewed_diagnoses
+    })
+
+@app.route('/api/agronomist/farmer/<int:farmer_id>', methods=['GET'])
+@login_required('agronomist')
+def api_agronomist_farmer(farmer_id):
+    farmer = db.get_user_profile(farmer_id)
+    if not farmer or farmer.get('role') != 'farmer':
+        return jsonify({'error': 'Farmer not found.'}), 404
+        
+    history = db.get_history(farmer_id)
+    messages = db.get_messages(farmer_id, session['user_id'])
+    
+    return jsonify({
+        'farmer': farmer,
+        'history': history,
+        'messages': messages
+    })
+
+@app.route('/api/consultation', methods=['GET'])
 @login_required('farmer')
-def index():
-    return render_template('index.html')
+def api_consultation():
+    agronomists = db.get_agronomists()
+    assigned_agronomist_id = request.args.get('agronomist_id')
+    
+    if not assigned_agronomist_id and agronomists:
+        assigned_agronomist_id = agronomists[0]['id']
+        
+    agronomist = None
+    messages = []
+    history = []
+    if assigned_agronomist_id:
+        agronomist = db.get_user_profile(int(assigned_agronomist_id))
+        messages = db.get_messages(session['user_id'], int(assigned_agronomist_id))
+        history = db.get_history(session['user_id'])
+        
+    return jsonify({
+        'agronomists': agronomists,
+        'agronomist': agronomist,
+        'messages': messages,
+        'history': history
+    })
 
-@app.route('/history')
-@login_required()
-def history_page():
-    # Farmers only see their own history, Agronomists see all
-    user_id = session['user_id'] if session['role'] == 'farmer' else None
-    history = db.get_history(user_id)
-    return render_template('history.html', history=history)
+# --- REACT SPA ROUTING INTEGRATION ---
 
 @app.route('/api/stats')
 @login_required()
@@ -224,6 +259,13 @@ def get_stats():
         'disease_counts': disease_counts,
         'recent_confidence': recent_confidence
     })
+
+@app.route('/api/history')
+@login_required()
+def api_history():
+    user_id = session['user_id'] if session['role'] == 'farmer' else None
+    history = db.get_history(user_id)
+    return jsonify({'history': history})
 
 @app.route('/analyze', methods=['POST'])
 @login_required('farmer')
@@ -270,34 +312,6 @@ def analyze():
     })
 
 # --- AGRONOMIST PORTAL ROUTES ---
-@app.route('/agronomist/dashboard')
-@login_required('agronomist')
-def agronomist_dashboard():
-    farmers = db.get_farmers()
-    
-    # Calculate some dashboard aggregate metrics
-    total_farmers = len(farmers)
-    all_diagnoses = db.get_history()
-    unreviewed_diagnoses = sum(1 for d in all_diagnoses if not db.get_recommendation_by_analysis(d['id']))
-    
-    return render_template(
-        'agronomist_dashboard.html', 
-        farmers=farmers, 
-        total_farmers=total_farmers, 
-        unreviewed_diagnoses=unreviewed_diagnoses
-    )
-
-@app.route('/agronomist/farmer/<int:farmer_id>')
-@login_required('agronomist')
-def agronomist_farmer(farmer_id):
-    farmer = db.get_user_profile(farmer_id)
-    if not farmer or farmer.get('role') != 'farmer':
-        return "Farmer not found", 404
-        
-    history = db.get_history(farmer_id)
-    messages = db.get_messages(farmer_id, session['user_id'])
-    
-    return render_template('agronomist_farmer.html', farmer=farmer, history=history, messages=messages)
 
 @app.route('/api/recommendation', methods=['POST'])
 @login_required('agronomist')
@@ -315,23 +329,6 @@ def save_recommendation():
     return jsonify({'error': 'Failed to save recommendation.'}), 500
 
 # --- CHAT & CONSULTATION ROUTES ---
-@app.route('/consultation')
-@login_required('farmer')
-def consultation():
-    agronomists = db.get_agronomists()
-    assigned_agronomist_id = request.args.get('agronomist_id')
-    
-    # Fallback to the first agronomist if none selected/assigned
-    if not assigned_agronomist_id and agronomists:
-        assigned_agronomist_id = agronomists[0]['id']
-        
-    agronomist = None
-    messages = []
-    if assigned_agronomist_id:
-        agronomist = db.get_user_profile(int(assigned_agronomist_id))
-        messages = db.get_messages(session['user_id'], int(assigned_agronomist_id))
-        
-    return render_template('consultation.html', agronomists=agronomists, agronomist=agronomist, messages=messages)
 
 @app.route('/api/messages', methods=['GET', 'POST'])
 @login_required()
@@ -344,10 +341,11 @@ def handle_messages():
             return jsonify({'error': 'Message text is empty'}), 400
             
         if session['role'] == 'farmer':
+            sender_role = data.get('sender_role', 'farmer')
             agronomist_id = data.get('agronomist_id')
             if not agronomist_id:
                 return jsonify({'error': 'No agronomist specified'}), 400
-            db.send_message(session['user_id'], int(agronomist_id), message, 'farmer')
+            db.send_message(session['user_id'], int(agronomist_id), message, sender_role)
         else:
             farmer_id = data.get('farmer_id')
             if not farmer_id:
@@ -682,6 +680,19 @@ def download_report(analysis_id):
 
     return send_file(pdf_path, as_attachment=True, download_name=f"leaf_report_{analysis_id}.pdf")
 
+# Catch-all route to serve React Single Page Application (SPA)
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def catch_all(path):
+    # Avoid hijacking API and system routes
+    if path.startswith('api/') or path == 'analyze' or path == 'chatbot' or path.startswith('download-report') or path.startswith('static/'):
+        return "Not Found", 404
+    try:
+        return send_from_directory(os.path.join('static', 'dist'), 'index.html')
+    except Exception:
+        return "React app has not been compiled yet. Please run 'npm run build' inside the 'frontend/' folder."
+
 if __name__ == '__main__':
     # Start the server on port 5000
     app.run(debug=True, port=5000)
+
