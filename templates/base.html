@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Plant Disease & Nutrient Deficiency Portal{% endblock %}</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Premium Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="icon" type="image/png" href="https://img.icons8.com/color/48/cotton-plant.png">
+</head>
+<body class="dark-theme"> <!-- Default to premium dark theme -->
+    
+    <!-- App Container -->
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <i class="fa-solid fa-leaf brand-icon"></i>
+                <div class="brand-text">
+                    <h2>LeafSentry</h2>
+                    <span>Agri-AI Diagnostic</span>
+                </div>
+            </div>
+            
+            <nav class="sidebar-menu">
+                {% if current_user %}
+                    {% if current_user.role == 'farmer' %}
+                        <a href="{{ url_for('index') }}" class="menu-item {% if request.path == '/' %}active{% endif %}" id="nav-dashboard">
+                            <i class="fa-solid fa-gauge-high"></i>
+                            <span>Dashboard</span>
+                        </a>
+                        <a href="{{ url_for('history_page') }}" class="menu-item {% if request.path == '/history' %}active{% endif %}" id="nav-history">
+                            <i class="fa-solid fa-chart-line"></i>
+                            <span>History & Analytics</span>
+                        </a>
+                        <a href="{{ url_for('consultation') }}" class="menu-item {% if request.path == '/consultation' %}active{% endif %}" id="nav-consultation">
+                            <i class="fa-solid fa-user-doctor"></i>
+                            <span>Consultation Hub</span>
+                        </a>
+                    {% elif current_user.role == 'agronomist' %}
+                        <a href="{{ url_for('agronomist_dashboard') }}" class="menu-item {% if '/agronomist' in request.path %}active{% endif %}" id="nav-agronomy">
+                            <i class="fa-solid fa-user-group"></i>
+                            <span>Agronomist Portal</span>
+                        </a>
+                        <a href="{{ url_for('history_page') }}" class="menu-item {% if request.path == '/history' %}active{% endif %}" id="nav-history">
+                            <i class="fa-solid fa-chart-line"></i>
+                            <span>Telemetry History</span>
+                        </a>
+                    {% endif %}
+                    <a href="{{ url_for('profile') }}" class="menu-item {% if request.path == '/profile' %}active{% endif %}" id="nav-profile">
+                        <i class="fa-solid fa-user-gear"></i>
+                        <span>My Profile</span>
+                    </a>
+                {% else %}
+                    <a href="{{ url_for('login') }}" class="menu-item active">
+                        <i class="fa-solid fa-right-to-bracket"></i>
+                        <span>Log In</span>
+                    </a>
+                {% endif %}
+            </nav>
+            
+            <!-- Quick Weather Panel -->
+            <div class="weather-panel-sidebar">
+                <div class="weather-header">
+                    <i class="fa-solid fa-cloud-sun weather-icon-main"></i>
+                    <h4>Crop Weather</h4>
+                </div>
+                <div class="weather-body">
+                    <p class="temp">29°C</p>
+                    <p class="desc">Scattered Clouds</p>
+                    <small class="action-tip">Optimal spray humidity (62%)</small>
+                </div>
+            </div>
+
+            <!-- Theme Toggle in Sidebar Footer -->
+            <div class="sidebar-footer">
+                <button id="theme-toggle-btn" class="theme-toggle" aria-label="Toggle dark and light theme">
+                    <i class="fa-solid fa-moon moon-icon"></i>
+                    <i class="fa-solid fa-sun sun-icon"></i>
+                    <span class="theme-text">Dark Mode</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Top Header -->
+            <header class="top-header">
+                <div class="header-left">
+                    <button id="mobile-menu-toggle" class="mobile-toggle-btn">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                    <h1 class="page-title">{% block page_title %}Dashboard{% endblock %}</h1>
+                </div>
+                <div class="header-right">
+                    {% if current_user %}
+                        <div class="user-profile">
+                            <img src="{{ current_user.avatar_url }}" alt="User Avatar" class="avatar">
+                            <div class="user-info">
+                                <span class="user-name">{{ current_user.full_name }}</span>
+                                <span class="user-role" style="text-transform: capitalize;">{{ current_user.role }}</span>
+                            </div>
+                            <a href="{{ url_for('logout') }}" class="logout-btn-header" title="Logout" style="margin-left: 15px; color: var(--text-secondary); font-size: 1.1rem; transition: color var(--transition-fast);">
+                                <i class="fa-solid fa-right-from-bracket"></i>
+                            </a>
+                        </div>
+                    {% else %}
+                        <div class="auth-buttons-header">
+                            <a href="{{ url_for('login') }}" class="btn btn-outline btn-small">
+                                <i class="fa-solid fa-right-to-bracket"></i> Login
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </header>
+
+            <!-- Page Body -->
+            <div class="content-body">
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+    </div>
+
+    {% if current_user and current_user.role == 'farmer' %}
+    <!-- Floating Chatbot Widget (Only for Farmers) -->
+    <div class="chatbot-widget" id="chatbot-widget">
+        <button class="chatbot-trigger" id="chatbot-trigger" title="Ask Leafy AI Assistant">
+            <i class="fa-solid fa-comment-dots"></i>
+            <span class="chat-badge">AI</span>
+        </button>
+        <div class="chatbot-container" id="chatbot-container">
+            <div class="chat-header">
+                <div class="chat-bot-info">
+                    <i class="fa-solid fa-robot"></i>
+                    <div>
+                        <h4>Leafy AI</h4>
+                        <span>Online</span>
+                    </div>
+                </div>
+                <button class="chat-close" id="chat-close"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            
+            <div class="chat-messages" id="chat-messages">
+                <div class="message bot-message">
+                    Hi {{ current_user.full_name }}! I'm Leafy, your agricultural assistant. Ask me anything about cotton leaf health, deficiencies, or treatment!
+                </div>
+            </div>
+            
+            <!-- Chatbot suggestion chips -->
+            <div class="chat-suggestions" id="chat-suggestions">
+                <button class="suggestion-chip" data-msg="What is my farm profile status?">🌾 My Farm Profile</button>
+                <button class="suggestion-chip" data-msg="Tell me about my last diagnosis">🔍 Last Diagnosis</button>
+                <button class="suggestion-chip" data-msg="How to treat Bacterial Blight?">🦠 Treatment Tips</button>
+                <button class="suggestion-chip" data-msg="Get current weather advisory">🌤️ Weather Info</button>
+            </div>
+            
+            <div class="chat-input-area">
+                <input type="text" id="chat-input" placeholder="Type a message..." autocomplete="off">
+                <button id="chat-send"><i class="fa-solid fa-paper-plane"></i></button>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Toast Notification -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Main JS -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

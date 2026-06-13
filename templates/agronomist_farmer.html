@@ -1,0 +1,205 @@
+{% extends 'base.html' %}
+
+{% block title %}Review Farmer: {{ farmer.full_name }} | LeafSentry AI{% endblock %}
+
+{% block page_title %}Farmer Case Review: {{ farmer.full_name }}{% endblock %}
+
+{% block content %}
+<div class="agronomy-case-layout">
+    <!-- Left Column: Farmer Details & Chat -->
+    <div class="case-sidebar">
+        <!-- Farmer Info Card -->
+        <div class="farmer-details-card card">
+            <div class="case-farmer-header">
+                <img src="{{ farmer.avatar_url }}" alt="Avatar">
+                <div>
+                    <h3>{{ farmer.full_name }}</h3>
+                    <p><i class="fa-solid fa-location-dot"></i> {{ farmer.location }}</p>
+                </div>
+            </div>
+            
+            <div class="case-farmer-meta border-top">
+                <div class="meta-item">
+                    <span class="lbl">Farm Name</span>
+                    <span class="val">{{ farmer.farm_name }}</span>
+                </div>
+                <div class="meta-item">
+                    <span class="lbl">Farm Size</span>
+                    <span class="val">{{ farmer.farm_size }} Acres</span>
+                </div>
+                <div class="meta-item">
+                    <span class="lbl">Soil Type</span>
+                    <span class="val badge-soil">{{ farmer.soil_type }}</span>
+                </div>
+                <div class="meta-item">
+                    <span class="lbl">Irrigation Type</span>
+                    <span class="val">{{ farmer.irrigation_type }}</span>
+                </div>
+                <div class="meta-item">
+                    <span class="lbl">Contact Phone</span>
+                    <span class="val">{{ farmer.phone or 'Not Provided' }}</span>
+                </div>
+            </div>
+            
+            <a href="{{ url_for('agronomist_dashboard') }}" class="btn btn-outline btn-large" style="margin-top: 15px;">
+                <i class="fa-solid fa-arrow-left"></i> Back to Dashboard
+            </a>
+        </div>
+
+        <!-- Chat Workspace Card -->
+        <div class="case-chat-card card">
+            <div class="card-header border-bottom">
+                <h3><i class="fa-solid fa-comments"></i> Direct Chat Console</h3>
+                <p>Discuss crop telemetry and recommendations with {{ farmer.full_name.split()[0] }}.</p>
+            </div>
+            
+            <div class="chat-message-window" id="consult-message-window">
+                {% if messages %}
+                    {% for msg in messages %}
+                        <div class="chat-bubble-row {% if msg.sender_role == 'agronomist' %}sender-self{% else %}sender-other{% endif %}">
+                            <div class="chat-bubble">
+                                <p>{{ msg.message }}</p>
+                                <span class="chat-time">{{ msg.timestamp[11:16] }}</span>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="chat-empty-state" id="chat-empty-state">
+                        <i class="fa-solid fa-comments"></i>
+                        <h4>No messages yet</h4>
+                        <p>Initiate consultation by sending a message below.</p>
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="chat-input-row">
+                <input type="text" id="consult-input" placeholder="Type message to farmer..." autocomplete="off">
+                <button type="button" class="btn btn-primary" id="consult-send-btn" data-farmer-id="{{ farmer.user_id }}">
+                    <i class="fa-solid fa-paper-plane"></i> Send
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: Diagnostics History & Recommendations Form -->
+    <div class="case-main-content">
+        <div class="farmer-diagnoses-list card">
+            <div class="card-header border-bottom">
+                <h3><i class="fa-solid fa-microscope"></i> Diagnostic Telemetry Records</h3>
+                <p>Review leaves uploaded by {{ farmer.full_name.split()[0] }} and log custom agronomist recommendations.</p>
+            </div>
+
+            <div class="case-diagnoses-feed">
+                {% if history %}
+                    {% for row in history %}
+                        <div class="case-diag-item card">
+                            <div class="case-diag-header">
+                                <div class="case-diag-pic">
+                                    <img src="{{ url_for('static', filename='uploads/' ~ row.filename) }}" alt="Leaf Sample">
+                                </div>
+                                <div class="case-diag-details">
+                                    <div class="case-diag-top">
+                                        <span class="status-badge {{ row.prediction | lower | replace(' ', '-') }}">{{ row.prediction }}</span>
+                                        <span class="case-diag-conf">Confidence: {{ row.confidence }}%</span>
+                                    </div>
+                                    <div class="case-diag-date"><i class="fa-solid fa-calendar-days"></i> Uploaded: {{ row.timestamp }}</div>
+                                    <div class="case-diag-mapping">
+                                        <p><strong>Soil Nutrient Signature</strong>: {{ row.nutrient }}</p>
+                                        <p><strong>Suggested Fertilizer</strong>: {{ row.fertilizer }}</p>
+                                    </div>
+                                </div>
+                                <div class="case-diag-report-link">
+                                    <a href="{{ url_for('download_report', analysis_id=row.id) }}" class="btn btn-outline btn-small" title="Download Report">
+                                        <i class="fa-solid fa-file-pdf"></i> Report
+                                    </a>
+                                </div>
+                            </div>
+
+                            <!-- Recommendation editor -->
+                            <div class="case-rec-form border-top">
+                                <h4 class="rec-form-title"><i class="fa-solid fa-prescription-bottle-medical"></i> Official Expert Advice</h4>
+                                
+                                <div class="rec-display-area" id="rec-display-{{ row.id }}">
+                                    {% if row.recommendation_text %}
+                                        <div class="rec-saved-alert">
+                                            <p class="rec-saved-text">"{{ row.recommendation_text }}"</p>
+                                            <small class="rec-saved-time"><i class="fa-solid fa-clock"></i> Issued on: {{ row.rec_timestamp[:16] }}</small>
+                                            <button class="btn btn-outline btn-small" onclick="toggleEditRec({{ row.id }})" style="margin-top: 8px;">
+                                                <i class="fa-solid fa-pen"></i> Edit Recommendation
+                                            </button>
+                                        </div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="rec-edit-area" id="rec-edit-{{ row.id }}" {% if row.recommendation_text %}style="display:none;"{% endif %}>
+                                    <textarea class="rec-textarea" id="textarea-{{ row.id }}" placeholder="Provide specific, actionable treatment steps, fertilizer rates, or preventative guidelines..." required>{% if row.recommendation_text %}{{ row.recommendation_text }}{% endif %}</textarea>
+                                    <div class="rec-actions">
+                                        <button class="btn btn-primary btn-small" onclick="submitRecommendation({{ row.id }})">
+                                            <i class="fa-solid fa-check"></i> Save Recommendation
+                                        </button>
+                                        {% if row.recommendation_text %}
+                                            <button class="btn btn-outline btn-small" onclick="cancelEditRec({{ row.id }})">Cancel</button>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-case-diagnoses">
+                        <i class="fa-solid fa-folder-open"></i>
+                        <h4>No Leaf Uploads Available</h4>
+                        <p>This farmer has not submitted any leaves for diagnostic testing yet.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleEditRec(id) {
+    document.getElementById('rec-display-' + id).style.display = 'none';
+    document.getElementById('rec-edit-' + id).style.display = 'block';
+}
+
+function cancelEditRec(id) {
+    document.getElementById('rec-display-' + id).style.display = 'block';
+    document.getElementById('rec-edit-' + id).style.display = 'none';
+}
+
+function submitRecommendation(analysisId) {
+    const text = document.getElementById('textarea-' + analysisId).value.trim();
+    if (!text) {
+        showToast('Please type a recommendation first.', 'error');
+        return;
+    }
+
+    fetch('/api/recommendation', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            analysis_id: analysisId,
+            recommendation_text: text
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.status === 'success') {
+            showToast('Recommendation updated successfully.', 'success');
+            // Reload page to reflect change
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        } else {
+            showToast(data.error || 'Failed to save recommendation.', 'error');
+        }
+    })
+    .catch(() => {
+        showToast('Server communication failure.', 'error');
+    });
+}
+</script>
+{% endblock %}

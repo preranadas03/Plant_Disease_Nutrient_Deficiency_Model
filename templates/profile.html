@@ -1,0 +1,146 @@
+{% extends 'base.html' %}
+
+{% block title %}My Profile | LeafSentry AI{% endblock %}
+
+{% block page_title %}My Profile Settings{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    <div class="profile-layout-grid">
+        <!-- Profile Card Panel -->
+        <div class="profile-card card">
+            <div class="profile-header-card">
+                <div class="profile-avatar-large">
+                    <img src="{{ profile.avatar_url }}" alt="Profile Avatar">
+                </div>
+                <div class="profile-meta-text">
+                    <h2>{{ profile.full_name }}</h2>
+                    <span class="role-badge {{ profile.role }}">{{ profile.role | upper }}</span>
+                    <p class="join-date">Member since: {{ profile.created_at[:10] }}</p>
+                </div>
+            </div>
+            
+            <div class="profile-quick-stats">
+                <div class="quick-stat-item">
+                    <span class="stat-lbl">Location</span>
+                    <span class="stat-val"><i class="fa-solid fa-map-location-dot"></i> {{ profile.location }}</span>
+                </div>
+                <div class="quick-stat-item">
+                    <span class="stat-lbl">Contact Phone</span>
+                    <span class="stat-val"><i class="fa-solid fa-phone"></i> {{ profile.phone or 'Not Provided' }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Edit Profile Form -->
+        <div class="profile-form-card card">
+            <div class="card-header border-bottom">
+                <h3><i class="fa-solid fa-user-gear"></i> Edit Profile Information</h3>
+                <p>Update your account details and agronomic settings.</p>
+            </div>
+            
+            {% if success %}
+                <div class="profile-success-alert">
+                    <i class="fa-solid fa-circle-check"></i>
+                    <span>Profile settings updated successfully!</span>
+                </div>
+            {% endif %}
+
+            <form action="{{ url_for('profile') }}" method="POST" class="auth-form">
+                <!-- Shared inputs -->
+                <div class="form-group">
+                    <label for="full_name">Full Name</label>
+                    <input type="text" id="full_name" name="full_name" value="{{ profile.full_name }}" required>
+                </div>
+
+                <div class="form-row-grid">
+                    <div class="form-group">
+                        <label for="phone">Phone Number</label>
+                        <input type="text" id="phone" name="phone" value="{{ profile.phone or '' }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="location">Location</label>
+                        <input type="text" id="location" name="location" value="{{ profile.location }}" required>
+                    </div>
+                </div>
+
+                <!-- Farmer settings -->
+                {% if profile.role == 'farmer' %}
+                    <div class="profile-sub-section">
+                        <h3 class="role-section-title"><i class="fa-solid fa-seedling"></i> Farm Telemetry Settings</h3>
+                        
+                        <div class="form-group">
+                            <label for="farm_name">Farm Name</label>
+                            <input type="text" id="farm_name" name="farm_name" value="{{ profile.farm_name }}" required>
+                        </div>
+
+                        <div class="form-row-grid">
+                            <div class="form-group">
+                                <label for="farm_size">Farm Size (Acres)</label>
+                                <input type="number" id="farm_size" name="farm_size" step="0.1" value="{{ profile.farm_size }}" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="soil_type">Soil Matrix Type</label>
+                                <select id="soil_type" name="soil_type">
+                                    <option value="Loamy" {% if profile.soil_type == 'Loamy' %}selected{% endif %}>Loamy (Recommended)</option>
+                                    <option value="Sandy" {% if profile.soil_type == 'Sandy' %}selected{% endif %}>Sandy Soil</option>
+                                    <option value="Clay" {% if profile.soil_type == 'Clay' %}selected{% endif %}>Clay Soil</option>
+                                    <option value="Black Cotton" {% if profile.soil_type == 'Black Cotton' %}selected{% endif %}>Black Cotton Soil</option>
+                                    <option value="Silty" {% if profile.soil_type == 'Silty' %}selected{% endif %}>Silty Soil</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row-grid">
+                            <div class="form-group">
+                                <label for="primary_crop">Primary Crop</label>
+                                <input type="text" id="primary_crop" name="primary_crop" value="{{ profile.primary_crop }}" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="irrigation_type">Irrigation Method</label>
+                                <select id="irrigation_type" name="irrigation_type">
+                                    <option value="Drip" {% if profile.irrigation_type == 'Drip' %}selected{% endif %}>Drip Irrigation</option>
+                                    <option value="Sprinkler" {% if profile.irrigation_type == 'Sprinkler' %}selected{% endif %}>Center Pivot / Sprinkler</option>
+                                    <option value="Furrow" {% if profile.irrigation_type == 'Furrow' %}selected{% endif %}>Furrow Irrigation</option>
+                                    <option value="Rain-fed" {% if profile.irrigation_type == 'Rain-fed' %}selected{% endif %}>Rain-fed</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+
+                <!-- Agronomist settings -->
+                {% if profile.role == 'agronomist' %}
+                    <div class="profile-sub-section">
+                        <h3 class="role-section-title"><i class="fa-solid fa-graduation-cap"></i> Agronomist Credentials</h3>
+                        
+                        <div class="form-group">
+                            <label for="specialization">Primary Specialization Area</label>
+                            <input type="text" id="specialization" name="specialization" value="{{ profile.specialization }}" required>
+                        </div>
+
+                        <div class="form-row-grid">
+                            <div class="form-group">
+                                <label for="experience_years">Years of Experience</label>
+                                <input type="number" id="experience_years" name="experience_years" value="{{ profile.experience_years }}" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="license_number">License / Registration ID</label>
+                                <input type="text" id="license_number" name="license_number" value="{{ profile.license_number }}" required>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+
+                <button type="submit" class="btn btn-primary btn-large" style="margin-top: 15px;">
+                    <i class="fa-solid fa-floppy-disk"></i> Save Profile Settings
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,192 @@
+{% extends 'base.html' %}
+
+{% block title %}Register | LeafSentry AI{% endblock %}
+
+{% block page_title %}Create LeafSentry Account{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper">
+    <div class="auth-card register-card">
+        <div class="auth-header">
+            <i class="fa-solid fa-user-plus auth-icon"></i>
+            <h2>Join LeafSentry</h2>
+            <p>Establish your crop health profile and connect with regional experts.</p>
+        </div>
+
+        {% if error %}
+            <div class="auth-error-alert">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <span>{{ error }}</span>
+            </div>
+        {% endif %}
+
+        <form action="{{ url_for('register') }}" method="POST" class="auth-form">
+            <!-- Account Info -->
+            <div class="form-row-grid">
+                <div class="form-group">
+                    <label for="username"><i class="fa-solid fa-user-circle"></i> Username</label>
+                    <input type="text" id="username" name="username" placeholder="Choose username" required autocomplete="off">
+                </div>
+
+                <div class="form-group">
+                    <label for="password"><i class="fa-solid fa-key"></i> Password</label>
+                    <input type="password" id="password" name="password" placeholder="Create password" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="full_name"><i class="fa-solid fa-id-card"></i> Full Name</label>
+                <input type="text" id="full_name" name="full_name" placeholder="Enter full name" required>
+            </div>
+
+            <div class="form-row-grid">
+                <div class="form-group">
+                    <label for="phone"><i class="fa-solid fa-phone"></i> Contact Number</label>
+                    <input type="text" id="phone" name="phone" placeholder="e.g., +1 (555) 000-0000">
+                </div>
+
+                <div class="form-group">
+                    <label for="location"><i class="fa-solid fa-location-dot"></i> Farm/Work Location</label>
+                    <input type="text" id="location" name="location" placeholder="e.g., Lubbock, Texas" required>
+                </div>
+            </div>
+
+            <!-- Role Selector -->
+            <div class="form-group">
+                <label class="form-label-header"><i class="fa-solid fa-users-gear"></i> Choose Your Profile Role</label>
+                <div class="role-selector-wrapper">
+                    <input type="radio" id="role-farmer" name="role" value="farmer" checked style="display: none;">
+                    <label for="role-farmer" class="role-btn-label active" id="label-farmer">
+                        <i class="fa-solid fa-tractor"></i>
+                        <span>Farmer</span>
+                    </label>
+
+                    <input type="radio" id="role-agronomist" name="role" value="agronomist" style="display: none;">
+                    <label for="role-agronomist" class="role-btn-label" id="label-agronomist">
+                        <i class="fa-solid fa-user-doctor"></i>
+                        <span>Agronomist</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Farmer-specific Fields -->
+            <div id="farmer-fields" class="role-fields-container">
+                <h3 class="role-section-title"><i class="fa-solid fa-seedling"></i> Farm Telemetry Profile</h3>
+                
+                <div class="form-group">
+                    <label for="farm_name">Farm/Business Name</label>
+                    <input type="text" id="farm_name" name="farm_name" placeholder="e.g., West Texas Cotton Farms">
+                </div>
+
+                <div class="form-row-grid">
+                    <div class="form-group">
+                        <label for="farm_size">Farm Size (Acres)</label>
+                        <input type="number" id="farm_size" name="farm_size" step="0.1" placeholder="e.g., 120.5">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="soil_type">Soil Matrix Type</label>
+                        <select id="soil_type" name="soil_type">
+                            <option value="Loamy">Loamy (Recommended)</option>
+                            <option value="Sandy">Sandy Soil</option>
+                            <option value="Clay">Clay Soil</option>
+                            <option value="Black Cotton">Black Cotton Soil</option>
+                            <option value="Silty">Silty Soil</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row-grid">
+                    <div class="form-group">
+                        <label for="primary_crop">Primary Crop</label>
+                        <input type="text" id="primary_crop" name="primary_crop" value="Cotton" placeholder="e.g., Cotton">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="irrigation_type">Irrigation Method</label>
+                        <select id="irrigation_type" name="irrigation_type">
+                            <option value="Drip">Drip Irrigation</option>
+                            <option value="Sprinkler">Center Pivot / Sprinkler</option>
+                            <option value="Furrow">Furrow Irrigation</option>
+                            <option value="Rain-fed">Rain-fed</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Agronomist-specific Fields -->
+            <div id="agronomist-fields" class="role-fields-container" style="display: none;">
+                <h3 class="role-section-title"><i class="fa-solid fa-graduation-cap"></i> Agronomy Credentials</h3>
+                
+                <div class="form-group">
+                    <label for="specialization">Primary Specialization Area</label>
+                    <input type="text" id="specialization" name="specialization" placeholder="e.g., Crop Pathology & Soil Science">
+                </div>
+
+                <div class="form-row-grid">
+                    <div class="form-group">
+                        <label for="experience_years">Years of Field Experience</label>
+                        <input type="number" id="experience_years" name="experience_years" min="0" placeholder="e.g., 8">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="license_number">Agronomist License / Certification ID</label>
+                        <input type="text" id="license_number" name="license_number" placeholder="e.g., AG-847293">
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-large auth-submit-btn" style="margin-top: 24px;">
+                <i class="fa-solid fa-user-plus"></i> Create Account
+            </button>
+        </form>
+
+        <div class="auth-footer">
+            <p>Already have an account? <a href="{{ url_for('login') }}">Log in here</a></p>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const radioFarmer = document.getElementById('role-farmer');
+    const radioAgronomist = document.getElementById('role-agronomist');
+    const labelFarmer = document.getElementById('label-farmer');
+    const labelAgronomist = document.getElementById('label-agronomist');
+    const farmerFields = document.getElementById('farmer-fields');
+    const agronomistFields = document.getElementById('agronomist-fields');
+
+    labelFarmer.addEventListener('click', () => {
+        radioFarmer.checked = true;
+        labelFarmer.classList.add('active');
+        labelAgronomist.classList.remove('active');
+        farmerFields.style.display = 'block';
+        agronomistFields.style.display = 'none';
+        
+        // Add required validation
+        document.getElementById('farm_name').required = true;
+        document.getElementById('farm_size').required = true;
+        
+        // Remove required validation
+        document.getElementById('specialization').required = false;
+        document.getElementById('license_number').required = false;
+    });
+
+    labelAgronomist.addEventListener('click', () => {
+        radioAgronomist.checked = true;
+        labelAgronomist.classList.add('active');
+        labelFarmer.classList.remove('active');
+        agronomistFields.style.display = 'block';
+        farmerFields.style.display = 'none';
+        
+        // Add required validation
+        document.getElementById('specialization').required = true;
+        document.getElementById('license_number').required = true;
+        
+        // Remove required validation
+        document.getElementById('farm_name').required = false;
+        document.getElementById('farm_size').required = false;
+    });
+});
+</script>
+{% endblock %}

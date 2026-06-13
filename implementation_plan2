@@ -1,0 +1,136 @@
+# Implementation Plan: Role-Based User Profiles (Farmers & Agronomists) and Context-Aware AI Chatbot
+
+We will upgrade LeafSentry from a single-user mock diagnostic tool to a fully functional role-based multi-user portal. This plan covers:
+1. **Database Schema Enhancements**: SQLite tables for users, farmer profiles, agronomist profiles, chat messages, and agronomist expert recommendations.
+2. **User Authentication & Profiles**: Secure registration, login (with easy Demo Accounts), role-based profile management.
+3. **Agronomist Workspace**: A dedicated dashboard for agronomists to track assigned farmers, view leaf diagnoses, chat, and issue recommendations.
+4. **Farmer Consultation Center**: A workspace for farmers to consult with agronomists, review their diagnosis telemetry, and get expert recommendations.
+5. **Context-Aware Smart Chatbot**: A chatbot that leverages session details (farmer's name, farm details, and diagnosis history) to provide personalized cotton health advice, complete with interactive suggestion chips and typing indicators.
+
+---
+
+## User Review Required
+
+> [!IMPORTANT]
+> - **Demo Quick-Login Buttons**: We will add clear, one-click quick login buttons on the login page for a **Demo Farmer** (John Doe) and a **Demo Agronomist** (Dr. Sarah Jenkins). This allows instant testing without having to register new accounts.
+> - **Database Seeding**: When the app starts, if the database is empty or missing, we will automatically seed it with sample data (mock leaf diagnoses, past consults, and chat logs) to ensure a rich first-run experience.
+
+---
+
+## Proposed Changes
+
+### Database Layer
+
+#### [MODIFY] [db.py](file:///c:/Users/prera/OneDrive/Desktop/Projects/Plant_Disease_Nutrient_Deficiency_Model/db.py)
+We will extend the SQLite schema and database utilities to handle authentication, profiles, messages, and recommendations.
+- **New Tables**:
+  - `users`: User login details, names, phones, roles (`farmer` or `agronomist`), and avatars.
+  - `farmer_profiles`: Specific telemetry like soil type, farm size, crop type, and irrigation.
+  - `agronomist_profiles`: Professional info like specialization, license number, and experience.
+  - `messages`: Chat correspondence between farmers and agronomists.
+  - `recommendations`: Expert feedback provided by agronomists linked to a specific leaf analysis.
+- **Modified Table**:
+  - `analyses`: Add `user_id` column to associate uploads with specific farmers.
+- **New Functions**:
+  - `register_user(...)`, `authenticate_user(username, password)`
+  - `get_user_profile(user_id)`, `update_farmer_profile(...)`, `update_agronomist_profile(...)`
+  - `get_farmers()`, `get_agronomists()`
+  - `get_farmer_data_for_agronomist(farmer_id)`
+  - `send_message(farmer_id, agronomist_id, message, sender_role)`, `get_messages(farmer_id, agronomist_id)`
+  - `add_recommendation(analysis_id, agronomist_id, recommendation_text)`, `get_recommendation_by_analysis(analysis_id)`
+  - `seed_demo_data()`: Automatically creates sample profiles, analyses, and chat logs if database is blank.
+
+---
+
+### Backend Logic & Routing
+
+#### [MODIFY] [server.py](file:///c:/Users/prera/OneDrive/Desktop/Projects/Plant_Disease_Nutrient_Deficiency_Model/server.py)
+We will add route protection, session handling, user registration, profile configuration, agronomist dashboard rendering, and an updated AI chatbot.
+- **Session Protection**: Ensure only logged-in farmers can run diagnostics, and only logged-in agronomists can view the farmer telemetry.
+- **Auth Endpoints**:
+  - `/login`: Standard page with credentials input and "Quick-Login" links for demo users.
+  - `/register`: Handles registration. If role is 'farmer', shows farm-specific parameters. If 'agronomist', shows professional specialization inputs.
+  - `/logout`: Clears session data.
+- **Profile Endpoint**:
+  - `/profile`: GET/POST to manage personal profiles and update farm metadata.
+- **Agronomist Portal Endpoints**:
+  - `/agronomist/dashboard`: Main list of farmers, key analytics, and assigned consultation cards.
+  - `/agronomist/farmer/<int:farmer_id>`: Detail page to view a specific farmer's uploads, history, and a chat window.
+  - `/api/recommendation` [POST]: Saves agronomist recommendations for a leaf analysis.
+- **Farmer Consultation Endpoints**:
+  - `/consultation`: Farmer interface to select/view their agronomist and open a communication chat.
+- **Upgraded Chatbot Endpoint**:
+  - `/chatbot` [POST]: Upgraded context-aware logic. If the user is logged in as a farmer, the chatbot accesses their farm size, soil type, and most recent leaf diagnosis, offering customized diagnostics, fertilizer advice, and suggesting action chips.
+
+---
+
+### Front-End Templates & Styles
+
+#### [MODIFY] [templates/base.html](file:///c:/Users/prera/OneDrive/Desktop/Projects/Plant_Disease_Nutrient_Deficiency_Model/templates/base.html)
+- Dynamic navbar: Replace mock portal text with dynamic headers displaying the current user's profile avatar, name, and role.
+- Navigation links change based on login state and role:
+  - *Farmers*: Dashboard, History & Analytics, Consultation Hub, My Profile, Logout.
+  - *Agronomists*: Agronomist Portal, My Profile, Logout.
+  - *Logged Out*: Link to Login / Register.
+
+#### [NEW] [templates/login.html](file:///c:/Users/prera/OneDrive/Desktop/Projects/Plant_Disease_Nutrient_Deficiency_Model/templates/login.html)
+A glassmorphic, visual login screen:
+- Username and password inputs with custom focus animations.
+- "Quick-Login" cards for **Demo Farmer** and **Demo Agronomist**.
+- Links to create a new account.
+
+#### [NEW] [templates/register.html](file:///c:/Users/prera/OneDrive/Desktop/Projects/Plant_Disease_Nutrient_Deficiency_Model/templates/register.html)
+Interactive registration page:
+- Role selector toggle (Farmer vs. Agronomist) that dynamically displays relevant sub-forms using JavaScript.
+- Farmers: Farm Name, Farm Size (Acres), Soil Type (Sandy, Clay, Loamy, Black Cotton), Irrigation Method (Drip, Sprinkler, Rain-fed).
+- Agronomists: Specialization (Pest Control, Crop Pathology, Soil Health, General Agronomy), License Number, Experience Years.
+
+#### [NEW] [templates/profile.html](file:///c:/Users/prera/OneDrive/Desktop/Projects/Plant_Disease_Nutrient_Deficiency_Model/templates/profile.html)
+Comprehensive profile management:
+- View current details and profile status.
+- Edit form to modify active farm details or professional information.
+
+#### [NEW] [templates/consultation.html](file:///c:/Users/prera/OneDrive/Desktop/Projects/Plant_Disease_Nutrient_Deficiency_Model/templates/consultation.html)
+The Farmer Consultation Portal:
+- List of available agronomists.
+- Chat window with the assigned agronomist.
+- Section displaying official recommendations received.
+
+#### [NEW] [templates/agronomist_dashboard.html](file:///c:/Users/prera/OneDrive/Desktop/Projects/Plant_Disease_Nutrient_Deficiency_Model/templates/agronomist_dashboard.html)
+The central workspace for Agronomists:
+- Grid cards displaying assigned farmers, their farm size, soil types, and counts of uploaded leaf images.
+- Highlight metrics showing number of unreviewed leaf diagnostics.
+
+#### [NEW] [templates/agronomist_farmer.html](file:///c:/Users/prera/OneDrive/Desktop/Projects/Plant_Disease_Nutrient_Deficiency_Model/templates/agronomist_farmer.html)
+Agronomist's detailed farmer inspection page:
+- Farmer information dashboard (location, soil telemetry).
+- Historical log of diagnoses, allowing the agronomist to select a diagnosis and type a custom **Expert Recommendation**.
+- Chat window to reply directly to the farmer.
+
+#### [MODIFY] [static/css/style.css](file:///c:/Users/prera/OneDrive/Desktop/Projects/Plant_Disease_Nutrient_Deficiency_Model/static/css/style.css)
+Styles for all new components:
+- Glassmorphic forms, grid configurations for portals, and profile badges.
+- Chat layout: Rounded message bubbles, color coding for sender roles, scrollable chat windows, and typing indicator styling.
+- Suggestion chips: Small pill-shaped buttons for the chatbot suggestions.
+
+#### [MODIFY] [static/js/main.js](file:///c:/Users/prera/OneDrive/Desktop/Projects/Plant_Disease_Nutrient_Deficiency_Model/static/js/main.js)
+- Handle interactive register role-toggle forms.
+- Chat interface handler: Asynchronous messaging for Farmer-Agronomist portals.
+- Recommendation submissions via fetch API.
+- Upgraded Chatbot interface: Suggestion chips handling, markdown styling, and realistic typing indicators.
+
+---
+
+## Verification Plan
+
+### Automated Verification
+- Verify the SQLite tables are initialized properly using sqlite3 command lines.
+- Run Python tests or scripts to verify profile updates, messaging, and recommendation saves.
+
+### Manual Verification
+1. **Access control**: Open the site and try to visit `/`, `/history`, and `/profile` while logged out; ensure redirect to `/login`.
+2. **Demo Farmer Login**: Use the Quick-Login button. Run a leaf diagnosis, verify it saves specifically to this farmer, and view it on the History page.
+3. **Chatbot Interactions**: Open the Leafy AI widget. Click suggestion chips (e.g. "My Farm Profile Info", "Review last diagnosis"), verify that the response accurately references John Doe, his loamy soil, and his last diagnosis condition.
+4. **Consultation**: Message Agronomist Sarah Jenkins from the Farmer's Consultation Hub.
+5. **Agronomist Login**: Log out, use the Quick-Login button for Dr. Sarah Jenkins. Verify you see the list of farmers, click John Doe, see his historical diagnostics, write a custom Recommendation for his Bacterial Blight case, and reply to his chat message.
+6. **Verification of Advice**: Log back in as John Doe, visit the Consultation page or Dashboard, and confirm the custom recommendation is displayed with a "Verified Expert Recommendation" green badge.

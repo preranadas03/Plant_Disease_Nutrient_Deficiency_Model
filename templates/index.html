@@ -1,0 +1,169 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard | LeafSentry AI{% endblock %}
+
+{% block page_title %}Model Diagnosis Dashboard{% endblock %}
+
+{% block content %}
+<div class="dashboard-grid">
+    <!-- Left Column: Diagnostic Interface -->
+    <div class="diagnostic-card main-card">
+        <div class="card-header">
+            <h3><i class="fa-solid fa-microscope"></i> Live Leaf Diagnosis</h3>
+            <p>Upload a cotton leaf image to run real-time YOLOv8 disease classification and nutrient mapping.</p>
+        </div>
+        
+        <!-- Dropzone area -->
+        <div class="upload-zone" id="upload-zone">
+            <input type="file" id="leaf-file-input" accept="image/*" style="display: none;">
+            <div class="upload-zone-content">
+                <i class="fa-solid fa-cloud-arrow-up upload-icon"></i>
+                <p class="upload-text">Drag & drop your leaf image here, or <span>browse files</span></p>
+                <span class="file-limits">Supports JPG, JPEG, PNG (max. 16MB)</span>
+            </div>
+            <!-- Live Preview container -->
+            <div class="preview-container" id="preview-container" style="display: none;">
+                <img id="image-preview" src="#" alt="Leaf Preview">
+                <button type="button" class="remove-preview-btn" id="remove-preview-btn">
+                    <i class="fa-solid fa-trash-can"></i> Remove
+                </button>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="diagnostic-actions">
+            <button type="button" class="btn btn-primary btn-large" id="analyze-btn" disabled>
+                <i class="fa-solid fa-play"></i> Run AI Diagnosis
+            </button>
+        </div>
+
+        <!-- Analyzer Loading State -->
+        <div class="analyzer-loading" id="analyzer-loading" style="display: none;">
+            <div class="spinner-container">
+                <div class="spinner"></div>
+                <div class="pulse-ring"></div>
+            </div>
+            <h4>Running YOLOv8 Deep Learning Inference...</h4>
+            <p>Analyzing cell structures, chlorosis, lesions, and necrosis patterns.</p>
+        </div>
+    </div>
+
+    <!-- Right Column: Interactive Diagnostic Outputs (Hidden until analyzed) -->
+    <div class="results-wrapper" id="results-wrapper" style="display: none;">
+        <div class="results-card">
+            <div class="card-header border-bottom">
+                <div class="header-align">
+                    <h3><i class="fa-solid fa-square-poll-vertical"></i> Analysis Results</h3>
+                    <a href="#" class="btn btn-outline btn-small" id="pdf-download-link">
+                        <i class="fa-solid fa-file-pdf"></i> Download PDF Report
+                    </a>
+                </div>
+            </div>
+            
+            <div class="results-body">
+                <!-- Top summary row -->
+                <div class="result-summary-row">
+                    <div class="summary-metric">
+                        <span class="metric-label">Detected Condition</span>
+                        <h2 class="metric-value status-badge" id="result-prediction">-</h2>
+                    </div>
+                    <div class="summary-metric">
+                        <span class="metric-label">Inference Confidence</span>
+                        <div class="confidence-gauge-wrapper">
+                            <span class="metric-value" id="result-confidence">-%</span>
+                            <div class="confidence-bar-outer">
+                                <div class="confidence-bar-inner" id="result-confidence-bar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Detailed diagnostic panels -->
+                <div class="diagnostic-details-grid">
+                    <div class="detail-card warning-card">
+                        <div class="detail-card-icon">
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                        </div>
+                        <div class="detail-card-content">
+                            <h4>Nutrient Deficiency Mapping</h4>
+                            <p id="result-nutrient">-</p>
+                        </div>
+                    </div>
+
+                    <div class="detail-card info-card">
+                        <div class="detail-card-icon">
+                            <i class="fa-solid fa-prescription-bottle-medical"></i>
+                        </div>
+                        <div class="detail-card-content">
+                            <h4>Recommended Treatment / Fertilizer</h4>
+                            <p id="result-fertilizer">-</p>
+                        </div>
+                    </div>
+
+                    <div class="detail-card success-card">
+                        <div class="detail-card-icon">
+                            <i class="fa-solid fa-shield-halved"></i>
+                        </div>
+                        <div class="detail-card-content">
+                            <h4>Long-Term Prevention Strategy</h4>
+                            <p id="result-prevention">-</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Static Info Column: Cotton Care Quick Guide -->
+    <div class="info-sidebar-card card">
+        <div class="card-header">
+            <h3><i class="fa-solid fa-circle-info"></i> Model Reference Guide</h3>
+            <p>Supported cotton leaf diseases & corresponding primary deficiency signatures.</p>
+        </div>
+        <div class="card-body">
+            <div class="reference-catalog">
+                <div class="reference-card">
+                    <img src="{{ url_for('static', filename='images/healthy.png') }}" alt="Healthy Leaf" class="ref-card-img">
+                    <div class="ref-card-details">
+                        <div class="ref-card-header">
+                            <h4>Healthy Leaf</h4>
+                            <span class="ref-badge healthy-badge">No Deficiency</span>
+                        </div>
+                        <p>Uniformly green color, natural veins, clear margins, showing no symptoms of physiological stress.</p>
+                    </div>
+                </div>
+                <div class="reference-card">
+                    <img src="{{ url_for('static', filename='images/blight.png') }}" alt="Bacterial Blight" class="ref-card-img">
+                    <div class="ref-card-details">
+                        <div class="ref-card-header">
+                            <h4>Bacterial Blight</h4>
+                            <span class="ref-badge warning-badge">Potassium (K) Stress</span>
+                        </div>
+                        <p>Angular water-soaked lesions that turn dark brown. Often resembles severe potassium deficiency.</p>
+                    </div>
+                </div>
+                <div class="reference-card">
+                    <img src="{{ url_for('static', filename='images/redding.png') }}" alt="Leaf Redding" class="ref-card-img">
+                    <div class="ref-card-details">
+                        <div class="ref-card-header">
+                            <h4>Leaf Redding</h4>
+                            <span class="ref-badge warning-badge">Phosphorus (P) Stress</span>
+                        </div>
+                        <p>Leaf margins turn purplish-red while main veins stay green. Typically flags phosphorus deficiency.</p>
+                    </div>
+                </div>
+                <div class="reference-card">
+                    <img src="{{ url_for('static', filename='images/variegation.png') }}" alt="Leaf Variegation" class="ref-card-img">
+                    <div class="ref-card-details">
+                        <div class="ref-card-header">
+                            <h4>Leaf Variegation</h4>
+                            <span class="ref-badge warning-badge">Magnesium (Mg) Stress</span>
+                        </div>
+                        <p>Interveinal chlorosis, yellowing spots or white stripes, signaling magnesium uptake deficiency.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

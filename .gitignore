@@ -1,0 +1,20 @@
+# Python cache
+__pycache__/
+*.pyc
+
+# Virtual environments
+myenv/
+venv/
+
+# YOLO training outputs
+runs/
+
+# Temporary files
+results.csv
+results.png
+
+# VS Code
+.vscode/
+
+# Last checkpoint
+weights/last.pt
