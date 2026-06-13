@@ -113,23 +113,25 @@ export default function Register({ onRegisterSuccess }) {
             </div>
           </div>
 
-          <div className="form-row-grid">
-            <div className="form-group">
+          <div className="row g-3 mb-3">
+            <div className="col-md-6 form-group">
               <label htmlFor="username">Username</label>
               <input
                 type="text"
                 id="username"
+                className="form-control"
                 value={username}
                 onChange={e => setUsername(e.target.value)}
                 placeholder="Pick a username"
                 required
               />
             </div>
-            <div className="form-group">
+            <div className="col-md-6 form-group">
               <label htmlFor="password">Password</label>
               <input
                 type="password"
                 id="password"
+                className="form-control"
                 value={password}
                 onChange={e => setPassword(e.target.value)}
                 placeholder="••••••••"
@@ -138,23 +140,25 @@ export default function Register({ onRegisterSuccess }) {
             </div>
           </div>
 
-          <div className="form-row-grid">
-            <div className="form-group">
+          <div className="row g-3 mb-3">
+            <div className="col-md-6 form-group">
               <label htmlFor="fullName">Full Name</label>
               <input
                 type="text"
                 id="fullName"
+                className="form-control"
                 value={fullName}
                 onChange={e => setFullName(e.target.value)}
                 placeholder="Enter full name"
                 required
               />
             </div>
-            <div className="form-group">
+            <div className="col-md-6 form-group">
               <label htmlFor="phone">Phone Number</label>
               <input
                 type="text"
                 id="phone"
+                className="form-control"
                 value={phone}
                 onChange={e => setPhone(e.target.value)}
                 placeholder="+1 234 567 890"
@@ -162,11 +166,12 @@ export default function Register({ onRegisterSuccess }) {
             </div>
           </div>
 
-          <div className="form-group">
+          <div className="form-group mb-3">
             <label htmlFor="location">General Location</label>
             <input
               type="text"
               id="location"
+              className="form-control"
               value={location}
               onChange={e => setLocation(e.target.value)}
               placeholder="e.g., Texas, USA"
@@ -180,23 +185,25 @@ export default function Register({ onRegisterSuccess }) {
               <div className="role-section-title">
                 <i className="fa-solid fa-tractor"></i> Farmer Profile Details
               </div>
-              <div className="form-row-grid">
-                <div className="form-group">
+              <div className="row g-3 mb-3">
+                <div className="col-md-6 form-group">
                   <label htmlFor="farmName">Farm Name</label>
                   <input
                     type="text"
                     id="farmName"
+                    className="form-control"
                     value={farmName}
                     onChange={e => setFarmName(e.target.value)}
                     placeholder="e.g. Sunny Orchards"
                   />
                 </div>
-                <div className="form-group">
+                <div className="col-md-6 form-group">
                   <label htmlFor="farmSize">Farm Size (Acres)</label>
                   <input
                     type="number"
                     step="0.1"
                     id="farmSize"
+                    className="form-control"
                     value={farmSize}
                     onChange={e => setFarmSize(e.target.value)}
                     placeholder="10.0"
@@ -204,9 +211,9 @@ export default function Register({ onRegisterSuccess }) {
                 </div>
               </div>
 
-              <div className="form-group">
+              <div className="form-group mb-3">
                 <label htmlFor="soilType">Soil Classification</label>
-                <select id="soilType" value={soilType} onChange={e => setSoilType(e.target.value)}>
+                <select id="soilType" className="form-select" value={soilType} onChange={e => setSoilType(e.target.value)}>
                   <option value="Sandy">Sandy</option>
                   <option value="Clayey">Clayey</option>
                   <option value="Loamy">Loamy</option>
@@ -214,10 +221,10 @@ export default function Register({ onRegisterSuccess }) {
                 </select>
               </div>
 
-              <div className="form-row-grid">
-                <div className="form-group">
+              <div className="row g-3 mb-3">
+                <div className="col-md-6 form-group">
                   <label htmlFor="primaryCrop">Primary Cultivated Crop</label>
-                  <select id="primaryCrop" value={primaryCrop} onChange={e => setPrimaryCrop(e.target.value)}>
+                  <select id="primaryCrop" className="form-select" value={primaryCrop} onChange={e => setPrimaryCrop(e.target.value)}>
                     <option value="Cotton">Cotton</option>
                     <option value="Wheat">Wheat</option>
                     <option value="Rice">Rice</option>
@@ -226,9 +233,9 @@ export default function Register({ onRegisterSuccess }) {
                     <option value="Other">Other</option>
                   </select>
                 </div>
-                <div className="form-group">
+                <div className="col-md-6 form-group">
                   <label htmlFor="irrigationType">Irrigation Scheme</label>
-                  <select id="irrigationType" value={irrigationType} onChange={e => setIrrigationType(e.target.value)}>
+                  <select id="irrigationType" className="form-select" value={irrigationType} onChange={e => setIrrigationType(e.target.value)}>
                     <option value="Drip">Drip</option>
                     <option value="Sprinkler">Sprinkler</option>
                     <option value="Flood">Flood</option>
@@ -245,10 +252,11 @@ export default function Register({ onRegisterSuccess }) {
               <div className="role-section-title">
                 <i className="fa-solid fa-user-doctor"></i> Agronomist Licensing & Background
               </div>
-              <div className="form-group">
+              <div className="form-group mb-3">
                 <label htmlFor="specialization">Field of Expertise</label>
                 <select
                   id="specialization"
+                  className="form-select"
                   value={specialization}
                   onChange={e => setSpecialization(e.target.value)}
                 >
@@ -259,23 +267,25 @@ export default function Register({ onRegisterSuccess }) {
                 </select>
               </div>
 
-              <div className="form-row-grid">
-                <div className="form-group">
+              <div className="row g-3 mb-3">
+                <div className="col-md-6 form-group">
                   <label htmlFor="experienceYears">Years of Experience</label>
                   <input
                     type="number"
                     id="experienceYears"
+                    className="form-control"
                     value={experienceYears}
                     onChange={e => setExperienceYears(e.target.value)}
                     placeholder="e.g. 5"
                     required
                   />
                 </div>
-                <div className="form-group">
+                <div className="col-md-6 form-group">
                   <label htmlFor="licenseNumber">Agronomist License ID</label>
                   <input
                     type="text"
                     id="licenseNumber"
+                    className="form-control"
                     value={licenseNumber}
                     onChange={e => setLicenseNumber(e.target.value)}
                     placeholder="e.g. AG-12345"
@@ -286,7 +296,7 @@ export default function Register({ onRegisterSuccess }) {
             </div>
           )}
 
-          <button type="submit" className="btn btn-primary btn-large" style={{ marginTop: '10px' }} disabled={loading}>
+          <button type="submit" className="btn btn-success w-100 btn-lg" style={{ marginTop: '10px' }} disabled={loading}>
             {loading ? <i className="fa-solid fa-spinner fa-spin"></i> : 'Register Now'}
           </button>
         </form>

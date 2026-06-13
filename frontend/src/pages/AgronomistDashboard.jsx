@@ -27,34 +27,40 @@ export default function AgronomistDashboard({ showToast }) {
   return (
     <div>
       {/* Agronomist Stats Row */}
-      <div className="agronomy-stats-row">
-        <div className="agronomy-stat-card card">
-          <div className="stat-card-icon primary-color">
-            <i className="fa-solid fa-user-group"></i>
-          </div>
-          <div className="stat-card-info">
-            <h3>{data.total_farmers}</h3>
-            <p style={{ color: 'var(--text-secondary)' }}>Registered Farmers</p>
-          </div>
-        </div>
-
-        <div className="agronomy-stat-card card">
-          <div className="stat-card-icon warning-color">
-            <i className="fa-solid fa-clock-rotate-left"></i>
-          </div>
-          <div className="stat-card-info">
-            <h3>{data.unreviewed_diagnoses}</h3>
-            <p style={{ color: 'var(--text-secondary)' }}>Pending Diagnostics Reviews</p>
+      <div className="row g-4 mb-4">
+        <div className="col-md-4">
+          <div className="agronomy-stat-card card shadow-sm p-3 h-100">
+            <div className="stat-card-icon primary-color">
+              <i className="fa-solid fa-user-group"></i>
+            </div>
+            <div className="stat-card-info">
+              <h3>{data.total_farmers}</h3>
+              <p style={{ color: 'var(--text-secondary)', marginBottom: 0 }}>Registered Farmers</p>
+            </div>
           </div>
         </div>
 
-        <div className="agronomy-stat-card card">
-          <div className="stat-card-icon success-color">
-            <i className="fa-solid fa-shield-halved"></i>
+        <div className="col-md-4">
+          <div className="agronomy-stat-card card shadow-sm p-3 h-100">
+            <div className="stat-card-icon warning-color">
+              <i className="fa-solid fa-clock-rotate-left"></i>
+            </div>
+            <div className="stat-card-info">
+              <h3>{data.unreviewed_diagnoses}</h3>
+              <p style={{ color: 'var(--text-secondary)', marginBottom: 0 }}>Pending Diagnostics Reviews</p>
+            </div>
           </div>
-          <div className="stat-card-info">
-            <h3>Active</h3>
-            <p style={{ color: 'var(--text-secondary)' }}>System Telemetry & YOLOv8</p>
+        </div>
+
+        <div className="col-md-4">
+          <div className="agronomy-stat-card card shadow-sm p-3 h-100">
+            <div className="stat-card-icon success-color">
+              <i className="fa-solid fa-shield-halved"></i>
+            </div>
+            <div className="stat-card-info">
+              <h3>Active</h3>
+              <p style={{ color: 'var(--text-secondary)', marginBottom: 0 }}>System Telemetry & YOLOv8</p>
+            </div>
           </div>
         </div>
       </div>
@@ -75,48 +81,52 @@ export default function AgronomistDashboard({ showToast }) {
           <i className="fa-solid fa-spinner fa-spin" style={{ marginRight: '8px' }}></i> Loading farmer profiles...
         </div>
       ) : data.farmers.length > 0 ? (
-        <div className="farmers-grid">
+        <div className="row g-4">
           {data.farmers.map((farmer) => (
-            <div key={farmer.id} className="farmer-summary-card">
-              <div className="farmer-card-header">
-                <img
-                  src={farmer.avatar_url || 'https://images.unsplash.com/photo-1595974482597-4b8da8879bc5?auto=format&fit=crop&q=80&w=150'}
-                  alt={farmer.full_name}
-                  className="farmer-avatar"
-                />
-                <div className="farmer-title-info">
-                  <h4>{farmer.full_name}</h4>
-                  <span>@{farmer.username} | {farmer.location}</span>
-                </div>
-              </div>
+            <div key={farmer.id} className="col-md-6 col-lg-4">
+              <div className="farmer-summary-card card shadow-sm p-3 h-100 d-flex flex-column justify-content-between">
+                <div>
+                  <div className="farmer-card-header">
+                    <img
+                      src={farmer.avatar_url || 'https://images.unsplash.com/photo-1595974482597-4b8da8879bc5?auto=format&fit=crop&q=80&w=150'}
+                      alt={farmer.full_name}
+                      className="farmer-avatar"
+                    />
+                    <div className="farmer-title-info">
+                      <h4>{farmer.full_name}</h4>
+                      <span>@{farmer.username} | {farmer.location}</span>
+                    </div>
+                  </div>
 
-              <div className="farmer-card-details">
-                <div className="detail-row">
-                  <span className="lbl">Farm Name:</span>
-                  <span className="val">{farmer.farm_name}</span>
+                  <div className="farmer-card-details">
+                    <div className="detail-row">
+                      <span className="lbl">Farm Name:</span>
+                      <span className="val">{farmer.farm_name}</span>
+                    </div>
+                    <div className="detail-row">
+                      <span className="lbl">Farm Size:</span>
+                      <span className="val">{farmer.farm_size} Acres</span>
+                    </div>
+                    <div className="detail-row">
+                      <span className="lbl">Soil Class:</span>
+                      <span className="val badge-soil">{farmer.soil_type}</span>
+                    </div>
+                    <div className="detail-row">
+                      <span className="lbl">Primary Crop:</span>
+                      <span className="val">{farmer.primary_crop}</span>
+                    </div>
+                    <div className="detail-row">
+                      <span className="lbl">Irrigation:</span>
+                      <span className="val">{farmer.irrigation_type}</span>
+                    </div>
+                  </div>
                 </div>
-                <div className="detail-row">
-                  <span className="lbl">Farm Size:</span>
-                  <span className="val">{farmer.farm_size} Acres</span>
-                </div>
-                <div className="detail-row">
-                  <span className="lbl">Soil Class:</span>
-                  <span className="val badge-soil">{farmer.soil_type}</span>
-                </div>
-                <div className="detail-row">
-                  <span className="lbl">Primary Crop:</span>
-                  <span className="val">{farmer.primary_crop}</span>
-                </div>
-                <div className="detail-row">
-                  <span className="lbl">Irrigation:</span>
-                  <span className="val">{farmer.irrigation_type}</span>
-                </div>
-              </div>
 
-              <div className="farmer-card-actions">
-                <Link to={`/agronomist/farmer/${farmer.id}`} className="btn btn-primary btn-small">
-                  <i className="fa-solid fa-user-doctor"></i> Review & Consult
-                </Link>
+                <div className="farmer-card-actions mt-3">
+                  <Link to={`/agronomist/farmer/${farmer.id}`} className="btn btn-success btn-sm w-100 py-2">
+                    <i className="fa-solid fa-user-doctor"></i> Review & Consult
+                  </Link>
+                </div>
               </div>
             </div>
           ))}

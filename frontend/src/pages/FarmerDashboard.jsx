@@ -114,10 +114,10 @@ export default function FarmerDashboard({ showToast }) {
   ]
 
   return (
-    <div className="dashboard-grid">
+    <div className="row g-4">
       {/* Left Column: Diagnostic Interface */}
-      <div>
-        <div className="diagnostic-card">
+      <div className="col-lg-8">
+        <div className="diagnostic-card card shadow-sm p-4">
           <div className="card-header">
             <h3>
               <i className="fa-solid fa-microscope"></i> Live Leaf Diagnosis
@@ -166,7 +166,7 @@ export default function FarmerDashboard({ showToast }) {
           <div className="diagnostic-actions" style={{ display: loading ? 'none' : 'flex' }}>
             <button
               type="button"
-              className="btn btn-primary btn-large"
+              className="btn btn-success btn-lg w-100 py-3 mt-3 shadow-sm"
               disabled={!selectedFile}
               onClick={handleRunDiagnosis}
             >
@@ -199,7 +199,7 @@ export default function FarmerDashboard({ showToast }) {
                   <a
                     href={`/download-report/${results.id}`}
                     download
-                    className="btn btn-outline btn-small"
+                    className="btn btn-outline-success btn-sm px-3"
                   >
                     <i className="fa-solid fa-file-pdf"></i> Download PDF Report
                   </a>
@@ -270,27 +270,29 @@ export default function FarmerDashboard({ showToast }) {
       </div>
 
       {/* Static Info Column: Cotton Care Quick Guide */}
-      <div className="info-sidebar-card card">
-        <div className="card-header">
-          <h3>
-            <i className="fa-solid fa-circle-info"></i> Model Reference Guide
-          </h3>
-          <p>Supported cotton leaf diseases & corresponding deficiency signatures.</p>
-        </div>
-        <div className="card-body">
-          <div className="reference-catalog">
-            {referenceCatalog.map((item, idx) => (
-              <div key={idx} className="reference-card">
-                <img src={item.img} alt={item.title} className="ref-card-img" />
-                <div className="ref-card-details">
-                  <div className="ref-card-header">
-                    <h4>{item.title}</h4>
-                    <span className={`ref-badge ${item.badgeClass}`}>{item.deficiency}</span>
+      <div className="col-lg-4">
+        <div className="info-sidebar-card card shadow-sm p-4">
+          <div className="card-header border-0 bg-transparent p-0 mb-4">
+            <h3>
+              <i className="fa-solid fa-circle-info"></i> Model Reference Guide
+            </h3>
+            <p>Supported cotton leaf diseases & corresponding deficiency signatures.</p>
+          </div>
+          <div className="card-body p-0">
+            <div className="reference-catalog">
+              {referenceCatalog.map((item, idx) => (
+                <div key={idx} className="reference-card">
+                  <img src={item.img} alt={item.title} className="ref-card-img" />
+                  <div className="ref-card-details">
+                    <div className="ref-card-header">
+                      <h4>{item.title}</h4>
+                      <span className={`ref-badge ${item.badgeClass}`}>{item.deficiency}</span>
+                    </div>
+                    <p>{item.desc}</p>
                   </div>
-                  <p>{item.desc}</p>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       </div>

@@ -144,11 +144,11 @@ export default function FarmerInspect({ showToast }) {
   }
 
   return (
-    <div className="agronomy-case-layout">
+    <div className="row g-4">
       {/* Left Column: Farmer Details & Chat */}
-      <div className="case-sidebar">
+      <div className="col-lg-4">
         {/* Farmer Info Card */}
-        <div className="farmer-details-card card">
+        <div className="farmer-details-card card shadow-sm p-4">
           <div className="case-farmer-header">
             <img
               src={farmer.avatar_url || 'https://images.unsplash.com/photo-1595974482597-4b8da8879bc5?auto=format&fit=crop&q=80&w=150'}
@@ -185,7 +185,7 @@ export default function FarmerInspect({ showToast }) {
             </div>
           </div>
 
-          <Link to="/" className="btn btn-outline btn-large" style={{ marginTop: '15px' }}>
+          <Link to="/" className="btn btn-outline-success w-100 btn-lg" style={{ marginTop: '15px' }}>
             <i className="fa-solid fa-arrow-left"></i> Back to Dashboard
           </Link>
         </div>
@@ -222,16 +222,17 @@ export default function FarmerInspect({ showToast }) {
             <div ref={chatEndRef} />
           </div>
 
-          <div className="chat-input-row">
+          <div className="chat-input-row input-group p-3 border-top bg-transparent">
             <input
               type="text"
+              className="form-control"
               value={chatInput}
               onChange={e => setChatInput(e.target.value)}
               onKeyDown={handleKeyPress}
               placeholder="Type message to farmer..."
               autoComplete="off"
             />
-            <button type="button" className="btn btn-primary" onClick={handleSendMessage}>
+            <button type="button" className="btn btn-success" onClick={handleSendMessage}>
               <i className="fa-solid fa-paper-plane"></i> Send
             </button>
           </div>
@@ -239,8 +240,8 @@ export default function FarmerInspect({ showToast }) {
       </div>
 
       {/* Right Column: Diagnostics History & Recommendations Form */}
-      <div className="case-main-content">
-        <div className="farmer-diagnoses-list card">
+      <div className="col-lg-8">
+        <div className="farmer-diagnoses-list card shadow-sm p-4">
           <div className="card-header border-bottom">
             <h3>
               <i className="fa-solid fa-microscope"></i> Diagnostic Telemetry Records
@@ -285,7 +286,7 @@ export default function FarmerInspect({ showToast }) {
                         <a
                           href={`/download-report/${row.id}`}
                           download
-                          className="btn btn-outline btn-small"
+                          className="btn btn-outline-success btn-sm px-3"
                           title="Download Report"
                         >
                           <i className="fa-solid fa-file-pdf"></i> Report
@@ -309,9 +310,8 @@ export default function FarmerInspect({ showToast }) {
                             </small>
                           )}
                           <button
-                            className="btn btn-outline btn-small"
+                            className="btn btn-outline-success btn-sm mt-2"
                             onClick={() => setEditingRecs(prev => ({ ...prev, [row.id]: true }))}
-                            style={{ marginTop: '8px' }}
                           >
                             <i className="fa-solid fa-pen"></i> Edit Recommendation
                           </button>
@@ -319,22 +319,23 @@ export default function FarmerInspect({ showToast }) {
                       ) : (
                         <div className="rec-edit-area">
                           <textarea
-                            className="rec-textarea"
+                            className="form-control mb-3"
+                            rows="4"
                             value={recsText[row.id] || ''}
                             onChange={e => setRecsText(prev => ({ ...prev, [row.id]: e.target.value }))}
                             placeholder="Provide specific, actionable treatment steps, fertilizer rates, or preventative guidelines..."
                             required
                           ></textarea>
-                          <div className="rec-actions">
+                          <div className="d-flex gap-2">
                             <button
-                              className="btn btn-primary btn-small"
+                              className="btn btn-success btn-sm"
                               onClick={() => handleSaveRecommendation(row.id)}
                             >
                               <i className="fa-solid fa-check"></i> Save Recommendation
                             </button>
                             {row.recommendation_text && (
                               <button
-                                className="btn btn-outline btn-small"
+                                className="btn btn-outline-secondary btn-sm"
                                 onClick={() => {
                                   // Revert text
                                   setRecsText(prev => ({ ...prev, [row.id]: row.recommendation_text }))

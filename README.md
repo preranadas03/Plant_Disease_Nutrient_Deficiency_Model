@@ -12,7 +12,7 @@ The application is structured as a modern **React SPA (Single Page Application)*
 
 - **YOLOv8 Leaf Diagnosis:** Real-time classification of cotton leaf conditions with confidence tracking.
 - **Nutrient & Fertilizer Mapping:** Maps detected disease symptoms to matching nutrient stresses and recommended treatments.
-- **Modern React Single Page Application (SPA):** A premium glassmorphic UI built with React, Vite, and custom CSS:
+- **Modern React Single Page Application (SPA):** A premium glassmorphic UI built with React, Vite, Bootstrap 5, and custom CSS Theme:
   - **Role-Based Access Control:** Separate registration/dashboards for **Farmers** (scan uploads, telemetry profiles, history) and **Agronomists** (review cases, issue official prescriptions).
   - **Expert Consultation Hub:** Instant chat system connecting farmers directly with extension agents and agricultural researchers.
   - **"Leafy" Context-Aware Chatbot:** Interactive assistant providing HTML-formatted soil suggestions, weather advisories, and historical analysis insights.
@@ -26,7 +26,7 @@ The application is structured as a modern **React SPA (Single Page Application)*
 ## Tech Stack
 
 - **Backend API:** Flask (Python)
-- **Frontend SPA:** React (JS), Vite, Vanilla CSS
+- **Frontend SPA:** React (JS), Vite, Bootstrap 5, Custom CSS Theme
 - **Deep Learning Model:** YOLOv8 (Ultralytics)
 - **Web Dashboards:** Streamlit (alternative interface)
 - **Database Management:** SQLite

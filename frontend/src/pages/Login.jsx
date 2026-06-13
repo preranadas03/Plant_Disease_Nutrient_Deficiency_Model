@@ -80,6 +80,7 @@ export default function Login({ onLoginSuccess }) {
             <input
               type="text"
               id="username"
+              className="form-control"
               value={username}
               onChange={e => setUsername(e.target.value)}
               placeholder="Enter your username"
@@ -94,6 +95,7 @@ export default function Login({ onLoginSuccess }) {
             <input
               type="password"
               id="password"
+              className="form-control"
               value={password}
               onChange={e => setPassword(e.target.value)}
               placeholder="••••••••"
@@ -101,7 +103,7 @@ export default function Login({ onLoginSuccess }) {
             />
           </div>
 
-          <button type="submit" className="btn btn-primary btn-large" style={{ marginTop: '10px' }} disabled={loading}>
+          <button type="submit" className="btn btn-success w-100 btn-lg" style={{ marginTop: '10px' }} disabled={loading}>
             {loading ? <i className="fa-solid fa-spinner fa-spin"></i> : 'Log In'}
           </button>
         </form>

@@ -137,9 +137,10 @@ export default function ConsultationHub({ showToast }) {
     : []
 
   return (
-    <div className="consultation-layout">
+    <div className="row g-4">
       {/* Left Sidebar: Agronomist Directory */}
-      <div className="agronomist-directory card">
+      <div className="col-lg-4">
+        <div className="agronomist-directory card shadow-sm">
         <div className="card-header border-bottom">
           <h3>
             <i className="fa-solid fa-address-book"></i> Active Agronomists
@@ -173,9 +174,11 @@ export default function ConsultationHub({ showToast }) {
           )}
         </div>
       </div>
+      </div>
 
       {/* Center/Right Workspace */}
-      <div className="consultation-workspace">
+      <div className="col-lg-8">
+        <div className="consultation-workspace">
         {loading ? (
           <div style={{ textAlign: 'center', padding: '40px' }}>
             <i className="fa-solid fa-spinner fa-spin" style={{ marginRight: '8px' }}></i> Loading consultation workspace...
@@ -227,16 +230,17 @@ export default function ConsultationHub({ showToast }) {
                 <div ref={chatEndRef} />
               </div>
 
-              <div className="chat-input-row">
+              <div className="chat-input-row input-group p-3 border-top bg-transparent">
                 <input
                   type="text"
+                  className="form-control"
                   value={chatInput}
                   onChange={e => setChatInput(e.target.value)}
                   onKeyDown={handleKeyPress}
                   placeholder="Type your message here..."
                   autoComplete="off"
                 />
-                <button type="button" className="btn btn-primary" onClick={handleSendMessage}>
+                <button type="button" className="btn btn-success" onClick={handleSendMessage}>
                   <i className="fa-solid fa-paper-plane"></i> Send
                 </button>
               </div>
@@ -268,7 +272,7 @@ export default function ConsultationHub({ showToast }) {
                         <a
                           href={`/download-report/${row.id}`}
                           download
-                          className="btn btn-outline btn-small"
+                          className="btn btn-outline-success btn-sm px-3"
                         >
                           <i className="fa-solid fa-file-pdf"></i> PDF
                         </a>
@@ -294,6 +298,7 @@ export default function ConsultationHub({ showToast }) {
             <p>Please select an agronomist from the active directory panel to view consultation threads and crop reports.</p>
           </div>
         )}
+      </div>
       </div>
     </div>
   )

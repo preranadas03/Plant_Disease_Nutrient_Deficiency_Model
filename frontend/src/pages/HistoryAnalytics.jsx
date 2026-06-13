@@ -188,69 +188,75 @@ export default function HistoryAnalytics({ user, showToast }) {
   return (
     <div className="analytics-container">
       {/* Charts Section */}
-      <div className="charts-grid">
-        <div className="chart-card card">
-          <div className="card-header">
-            <h3>
-              <i className="fa-solid fa-chart-pie"></i> Disease Distribution
-            </h3>
-            <p>Distribution profile of identified cotton plant conditions.</p>
-          </div>
-          <div className="card-body chart-wrapper">
-            {hasDiseaseData ? (
-              <Doughnut data={diseaseChartData} options={diseaseChartOptions} />
-            ) : (
-              <div className="no-data-msg">
-                <i className="fa-solid fa-folder-open"></i>
-                <p style={{ marginTop: '8px' }}>No analytical data logged yet.</p>
-              </div>
-            )}
+      <div className="row g-4 mb-4">
+        <div className="col-md-6">
+          <div className="chart-card card shadow-sm p-3">
+            <div className="card-header border-0 bg-transparent p-0 mb-3">
+              <h3>
+                <i className="fa-solid fa-chart-pie"></i> Disease Distribution
+              </h3>
+              <p>Distribution profile of identified cotton plant conditions.</p>
+            </div>
+            <div className="card-body chart-wrapper p-0">
+              {hasDiseaseData ? (
+                <Doughnut data={diseaseChartData} options={diseaseChartOptions} />
+              ) : (
+                <div className="no-data-msg">
+                  <i className="fa-solid fa-folder-open"></i>
+                  <p style={{ marginTop: '8px' }}>No analytical data logged yet.</p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
-        <div className="chart-card card">
-          <div className="card-header">
-            <h3>
-              <i className="fa-solid fa-chart-line"></i> Confidence Trends
-            </h3>
-            <p>Success rates and model confidence for last 10 detections.</p>
-          </div>
-          <div className="card-body chart-wrapper">
-            {hasConfidenceData ? (
-              <Line data={confidenceChartData} options={confidenceChartOptions} />
-            ) : (
-              <div className="no-data-msg">
-                <i className="fa-solid fa-folder-open"></i>
-                <p style={{ marginTop: '8px' }}>No analytical data logged yet.</p>
-              </div>
-            )}
+        <div className="col-md-6">
+          <div className="chart-card card shadow-sm p-3">
+            <div className="card-header border-0 bg-transparent p-0 mb-3">
+              <h3>
+                <i className="fa-solid fa-chart-line"></i> Confidence Trends
+              </h3>
+              <p>Success rates and model confidence for last 10 detections.</p>
+            </div>
+            <div className="card-body chart-wrapper p-0">
+              {hasConfidenceData ? (
+                <Line data={confidenceChartData} options={confidenceChartOptions} />
+              ) : (
+                <div className="no-data-msg">
+                  <i className="fa-solid fa-folder-open"></i>
+                  <p style={{ marginTop: '8px' }}>No analytical data logged yet.</p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
 
       {/* History Table Section */}
-      <div className="history-card card">
-        <div className="card-header border-bottom">
-          <div className="header-align">
+      <div className="history-card card shadow-sm p-4">
+        <div className="card-header border-bottom bg-transparent p-0 pb-3 mb-3">
+          <div className="header-align d-flex justify-content-between align-items-center">
             <div>
               <h3>
                 <i className="fa-solid fa-database"></i> Diagnosis Log Database
               </h3>
-              <p>Search, filter, and export detailed history logs of past leaf evaluations.</p>
+              <p className="mb-0">Search, filter, and export detailed history logs of past leaf evaluations.</p>
             </div>
             <div className="header-actions">
-              <button onClick={handleClearHistory} className="btn btn-danger btn-small">
+              <button onClick={handleClearHistory} className="btn btn-danger btn-sm px-3">
                 <i className="fa-solid fa-trash"></i> Clear Database
               </button>
             </div>
           </div>
         </div>
 
-        <div className="table-controls">
-          <div className="search-bar-wrapper">
-            <i className="fa-solid fa-magnifying-glass search-icon"></i>
+        <div className="table-controls mb-3">
+          <div className="search-bar-wrapper position-relative">
+            <i className="fa-solid fa-magnifying-glass search-icon position-absolute" style={{ left: '16px', top: '50%', transform: 'translateY(-50%)' }}></i>
             <input
               type="text"
+              className="form-control"
+              style={{ paddingLeft: '45px' }}
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
               placeholder="Search by disease, deficiency, or date..."
@@ -259,7 +265,7 @@ export default function HistoryAnalytics({ user, showToast }) {
         </div>
 
         <div className="table-responsive">
-          <table className="history-table">
+          <table className="table table-hover align-middle custom-history-table">
             <thead>
               <tr>
                 <th>ID</th>
